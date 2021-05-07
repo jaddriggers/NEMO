@@ -103,7 +103,7 @@ class CalendarTestCase(TestCase):
 		response = self.client.get(reverse('event_feed'),data={'user': tester.id, 'start': '2021-05-03','end': '2021-05-10', 'event_type': 'specific user'}, follow=True)
 		self.assertEqual(response.status_code, 200)
 
-	#Line 340 reservation_success find test already done
+
 
 
 	#line 269 except user
