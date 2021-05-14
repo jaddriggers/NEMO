@@ -11,6 +11,7 @@ from NEMO.models import (
     Resource,
     ResourceCategory,
     ScheduledOutage,
+    Task,
 )
 from NEMO.tests.test_utilities import (
     login_as_user,
@@ -69,13 +70,32 @@ class StatusDashboardTestCase(TestCase):
         area_record.start = datetime.now()
         area_record.save()
 
+        # for elif 145-149 create customerisstaff and customerisservicepersonell. Ignore the last function loggedinareawithoutreservation(). This should test 156 and 158
+
+        response = self.client.get(reverse("status_dashboard"), follow=True)
+        self.assertEqual(response.status_code, 200)
+
+        # create task model.py 1362 urgency thru creator forced shutdown and safety hazard optional?
+        tasks = Task()
+        tasks.urgency = -1
+        tasks.tool = tool
+        tasks.force_shutdown = True
+        tasks.safety_hazard = True
+        tasks.creator = owner
+        tasks.save()
+
         response = self.client.get(reverse("status_dashboard"), follow=True)
         self.assertEqual(response.status_code, 200)
 
         # test usage_event
+        # operator = User.objects.create(
+        #     username="mctest", first_name="Testy", last_name="McTester")
+        operator = User.objects.create(
+            username="McJad", first_name="Jad", last_name="H"
+        )
         usage_event = UsageEvent()
         usage_event.user = owner
-        usage_event.operator = owner
+        usage_event.operator = operator
         usage_event.tool = tool
         usage_event.project = project
         usage_event.start = datetime.now()
@@ -110,7 +130,7 @@ class StatusDashboardTestCase(TestCase):
         response = self.client.get(reverse("status_dashboard"), follow=True)
         self.assertEqual(response.status_code, 200)
 
-        #Test scheduled outage resource
+        # Test scheduled outage resource
         scheduled_outage = ScheduledOutage()
         scheduled_outage.creator = owner
         scheduled_outage.start = datetime.now() - timedelta(days=1)
@@ -133,8 +153,7 @@ class StatusDashboardTestCase(TestCase):
 
         scheduled_outage.save()
 
-        response = self.client.get(reverse('refresh_sidebar_icons'), follow=True)
+        response = self.client.get(reverse("refresh_sidebar_icons"), follow=True)
         self.assertEqual(response.status_code, 200)
 
-        #Test add_occupants customer_display
-
+        # Test add_occupants customer_display
