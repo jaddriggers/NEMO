@@ -76,13 +76,13 @@ class StatusDashboardTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
 
         # create task model.py 1362 urgency thru creator forced shutdown and safety hazard optional?
-        tasks = Task()
-        tasks.urgency = -1
-        tasks.tool = tool
-        tasks.force_shutdown = True
-        tasks.safety_hazard = True
-        tasks.creator = owner
-        tasks.save()
+        task = Task()
+        task.urgency = -1
+        task.tool = tool
+        task.force_shutdown = True
+        task.safety_hazard = True
+        task.creator = owner
+        task.save()
 
         response = self.client.get(reverse("status_dashboard"), follow=True)
         self.assertEqual(response.status_code, 200)
