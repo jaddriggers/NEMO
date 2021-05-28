@@ -95,7 +95,7 @@ DATABASES = {
 }
 
 STATIC_URL = "/static/"
-MEDIA_ROOT = "/nemo/media/"
+# MEDIA_ROOT = "/usr/src/NEMO/media/"
 MEDIA_URL = "/media/"
 
 SECRET_KEY = "test"
