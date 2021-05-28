@@ -1,0 +1,90 @@
+{% extends 'pagination/pagination_base.html' %}
+{% block extrahead %}
+    {% load static %}
+    <link rel="stylesheet" type="text/css" href="{% static "NEMO_facility_metrics/NEMO_facility_metrics.css" %}"/>
+{% endblock %}
+{% block title %}NemoFacilityMetrics{% endblock %}
+{% block content %}
+    <h2>Facility Metrics</h2>
+    {#    <div class="btn-group sidebar-item">#}
+    {#			<button id="filter" type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" {% if no_header %}style="display:none;"{% endif %}>#}
+    {#				Showing all tools#}
+    {#				<span class="caret"></span>#}
+    {#			</button>#}
+    {#    <ul class="dropdown-menu">#}
+    {#				<li class="dropdown-header">Filter by...</li>#}
+    {#				<li><a href="javascript:void(0)" onclick="filter('all tools')">All tools</a></li>#}
+    {#				<li><a href="javascript:void(0)" onclick="filter('tools in use')">Tools in use</a></li>#}
+    {#				<li><a href="javascript:void(0)" onclick="filter('problematic tools')">Problematic tools</a></li>#}
+    {#				<li><a href="javascript:void(0)" onclick="filter('idle tools')">Idle tools</a></li>#}
+    {#    </ul>#}
+    {#    </div>#}
+    <table class="table table-bordered table-condensed thead-light">
+        <thead>
+        <tr>
+            <th>{% include 'pagination/pagination_column.html' with order_by='tool' name='Tool' %}</th>
+            <th>{% include 'pagination/pagination_column.html' with order_by='duration' name='Total Tool Duration' %}</th>
+            <th>{% include 'pagination/pagination_column.html' with order_by='% use' name='% Use' %}</th>
+            <th>{% include 'pagination/pagination_column.html' with order_by='% use' name='% Outage' %}</th>
+            <th>{% include 'pagination/pagination_column.html' with order_by='% use' name='% Partial Outage' %}</th>
+        </tr>
+        </thead>
+        <tbody>
+
+        {% for tool in tools %}
+            <tr>
+                <td>{{ tool.name }}</td>
+                <td>{{ tool.display_duration }}</td>
+                <td>{{ tool.display_percentage_duration }}</td>
+                <td>{{ duration }}</td>
+                <td>{{ duration }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+
+    <table class="table table-bordered table-condensed thead-light">
+        <thead>
+        <tr>
+            <th>{% include 'pagination/pagination_column.html' with order_by='username' name='Username' %}</th>
+            <th>{% include 'pagination/pagination_column.html' with order_by='duration' name='Total Usage Duration' %}</th>
+
+        </tr>
+        </thead>
+        <tbody>
+        {% for tool in tools %}
+            <tr>
+                <td>{{ user }}</td>
+
+
+
+                <td>{{ duration }}</td>
+            </tr>
+        {% endfor %}
+{#             {% for user,duration in user_duration.items %}#}
+{#            <tr>#}
+{#                <td>{{ user }}</td>#}
+{##}
+{#                <td>{{ username }}</td>#}
+{##}
+{#                <td>{{ duration }}</td>#}
+{#            </tr>#}
+{#            {% endfor %}#}
+        </tbody>
+    </table>
+    {#    <script>#}
+    {#    function filter(show)#}
+    {#    {#}
+    {#		$("#filter").html("Showing " + show + " <span class='caret'></span>");#}
+    {#		if(show === "all tools")#}
+    {#			set_style('.in_use { display: table-row; } .idle { display: table-row; }');#}
+    {#		else if(show === "tools in use")#}
+    {#			set_style('.in_use { display: table-row; } .idle { display: none; }');#}
+    {#		else if(show === "problematic tools")#}
+    {#			set_style('.problematic { display: table-row } .healthy { display: none; }');#}
+    {#		else if(show === "idle tools")#}
+    {#			set_style('.idle { display: table-row; } .in_use { display: none; }');#}
+    {#	}#}
+    {#</script>#}
+{% endblock %}
