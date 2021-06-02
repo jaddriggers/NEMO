@@ -48,29 +48,23 @@
         <thead>
         <tr>
             <th>{% include 'pagination/pagination_column.html' with order_by='username' name='Username' %}</th>
-            <th>{% include 'pagination/pagination_column.html' with order_by='duration' name='Total Usage Duration' %}</th>
+            <th>{% include 'pagination/pagination_column.html' with order_by='duration' name='Total User Duration' %}</th>
+            <th>{% include 'pagination/pagination_column.html' with order_by='% use' name='% Use' %}</th>
+            <th>{% include 'pagination/pagination_column.html' with order_by='% use' name='% Outage' %}</th>
+            <th>{% include 'pagination/pagination_column.html' with order_by='% use' name='% Partial Outage' %}</th>
 
         </tr>
         </thead>
         <tbody>
-        {% for tool in tools %}
+        {% for user in users %}
             <tr>
                 <td>{{ user }}</td>
-
-
-
+                <td>{{ user.display_duration }}</td>
+                <td>{{ user.display_percentage_duration }}</td>
                 <td>{{ duration }}</td>
+
             </tr>
         {% endfor %}
-{#             {% for user,duration in user_duration.items %}#}
-{#            <tr>#}
-{#                <td>{{ user }}</td>#}
-{##}
-{#                <td>{{ username }}</td>#}
-{##}
-{#                <td>{{ duration }}</td>#}
-{#            </tr>#}
-{#            {% endfor %}#}
         </tbody>
     </table>
     {#    <script>#}
