@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from typing import Tuple
 
 from django.shortcuts import render
 from django.utils import timezone
@@ -6,20 +7,42 @@ from django.utils import timezone
 from NEMO.models import UsageEvent, Tool, User, Project, ScheduledOutage, Resource
 
 
+# gets period from date filter request
+def get_period_from_request(request) -> Tuple[datetime, datetime]:
+    period = request.GET.get("period")
+    right_now = timezone.now()
+
+    if period == 'last_60_days':
+        return right_now + timedelta(days=-60), right_now
+
+    elif period == 'last_90_days':
+        return right_now + timedelta(days=-90), right_now
+
+    else:
+        return right_now + timedelta(days=-30), right_now
+
+    # elif period == 'this_year':
+    #     return right_now + timedelta(days=-90), right_now datetime.now replace month = 1, day = 1, give the first of each year
+
+
+
+
+
+
 def metrics(request):
-    tool_results = tool_usage(request)
+    start, end = get_period_from_request(request)
+    tool_results = tool_usage(start, end)
+    period = get_period_from_request(request)
     # user_results = user_usage(request)
     # project_results = project_usage(request)
     # outage_results = scheduled_outage(request)
 
-    return render(request, "NEMO_facility_metrics/metrics_dashboard.html", {'tools': tool_results, })
+    return render(request, "NEMO_facility_metrics/metrics_dashboard.html", {'tools': tool_results, 'period': period})
 
 
 # tool usage and outage duration
-def tool_usage(request):
+def tool_usage(start_period, end_period):
     tool_results = Tool.objects.all()
-    start_period = timezone.now() + timedelta(days=-30)
-    end_period = timezone.now()
     for tool in tool_results:
         add_tool_usage(start_period, end_period, tool)
         add_tool_outage(start_period, end_period, tool)
