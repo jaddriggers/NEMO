@@ -3,74 +3,127 @@ from datetime import datetime, timedelta
 from django.shortcuts import render
 from django.utils import timezone
 
-from NEMO.models import UsageEvent, Tool, User
+from NEMO.models import UsageEvent, Tool, User, Project, ScheduledOutage, Resource
 
 
 def metrics(request):
     tool_results = tool_usage(request)
-    user_results = user_usage(request)
+    # user_results = user_usage(request)
+    # project_results = project_usage(request)
+    # outage_results = scheduled_outage(request)
 
-    return render(request, "NEMO_facility_metrics/metrics_dashboard.html",
-                  {'tools': tool_results, 'users': user_results})
+    return render(request, "NEMO_facility_metrics/metrics_dashboard.html", {'tools': tool_results, })
 
 
+# tool usage and outage duration
 def tool_usage(request):
     tool_results = Tool.objects.all()
-    start_period = timezone.now() + timedelta(days=-365)
+    start_period = timezone.now() + timedelta(days=-30)
     end_period = timezone.now()
     for tool in tool_results:
-        # total_usage_period = sum([usage.duration().total_seconds() for usage in UsageEvent.objects.filter(tool=tool, end__isnull=False, start__gt=start_period, end__lte=end_period)])
-        total_usage = sum([period(usage, period_start=start_period, period_end=end_period) for usage in
-                           UsageEvent.objects.filter(tool=tool, end__isnull=False)])
-        tool.display_duration = display_duration(total_usage)
-        percentage_duration = total_usage / (end_period - start_period).total_seconds()
+        add_tool_usage(start_period, end_period, tool)
+        add_tool_outage(start_period, end_period, tool)
+        add_tool_full_resource_outage(start_period, end_period, tool)
+        add_tool_partial_resource_outage(start_period, end_period, tool)
+
+    return tool_results
+
+
+def add_tool_usage(start_period, end_period, tool):
+    total_usage = sum([period(usage, period_start=start_period, period_end=end_period) for usage in
+                       UsageEvent.objects.filter(tool=tool, end__isnull=False)])
+    tool.display_duration = display_duration(total_usage)
+    percentage_duration = total_usage / (end_period - start_period).total_seconds()
+    tool.display_percentage_duration = f"{percentage_duration:.0%}"
+
+
+def add_tool_outage(start_period, end_period, tool):
+    total_outage = sum([period(usage, period_start=start_period, period_end=end_period) for usage in
+                        ScheduledOutage.objects.filter(tool=tool, end__isnull=False)])
+    tool.display_outage_duration = display_duration(total_outage)
+    percentage_outage_duration = total_outage / (end_period - start_period).total_seconds()
+    tool.display_outage_percentage_duration = f"{percentage_outage_duration:.0%}"
+
+
+def add_tool_full_resource_outage(start_period, end_period, tool):
+    total_usage = sum([period(usage, period_start=start_period, period_end=end_period) for usage in
+                       ScheduledOutage.objects.filter(resource__fully_dependent_tools__in=[tool],
+                                                      end__isnull=False)])
+    tool.resource_display_duration = display_duration(total_usage)
+    percentage_resource_duration = total_usage / (end_period - start_period).total_seconds()
+    tool.display_resource_percentage_duration = f"{percentage_resource_duration:.0%}"
+
+
+def add_tool_partial_resource_outage(start_period, end_period, tool):
+    total_usage = sum([period(usage, period_start=start_period, period_end=end_period) for usage in
+                       ScheduledOutage.objects.filter(resource__partially_dependent_tools__in=[tool],
+                                                      end__isnull=False)])
+    tool.resource_display_duration = display_duration(total_usage)
+    percentage_resource_partial_duration = total_usage / (end_period - start_period).total_seconds()
+    tool.display_resource_percentage_partial_duration = f"{percentage_resource_partial_duration:.0%}"
+
+
+# scheduled outage duration
+def scheduled_outage(request):
+    tool_outage_results = Tool.objects.all()
+    start_period = timezone.now() + timedelta(days=-30)
+    end_period = timezone.now()
+    for tool in tool_outage_results:
+        total_outage = sum([period(usage, period_start=start_period, period_end=end_period) for usage in
+                            ScheduledOutage.objects.filter(tool=tool, end__isnull=False)])
+        tool.display_duration = display_duration(total_outage)
+        percentage_duration = total_outage / (end_period - start_period).total_seconds()
         tool.display_percentage_duration = f"{percentage_duration:.0%}"
 
-    return
+    return tool_outage_results
 
 
+# user usage duration
 def user_usage(request):
-    results = User.objects.all()
-    start_period = timezone.now() + timedelta(days=-365)
+    user_results = User.objects.all()
+    start_period = timezone.now() + timedelta(days=-30)
     end_period = timezone.now()
-    for user in results:
-        # total_usage_period = sum([usage.duration().total_seconds() for usage in UsageEvent.objects.filter(tool=tool, end__isnull=False, start__gt=start_period, end__lte=end_period)])
+    for user in user_results:
         total_usage = sum([period(usage, period_start=start_period, period_end=end_period) for usage in
                            UsageEvent.objects.filter(user=user, end__isnull=False)])
         user.display_duration = display_duration(total_usage)
         percentage_duration = total_usage / (end_period - start_period).total_seconds()
         user.display_percentage_duration = f"{percentage_duration:.0%}"
 
+    return user_results
 
 
+# project usage duration
+def project_usage(request):
+    project_results = Project.objects.all()
+    start_period = timezone.now() + timedelta(days=-30)
+    end_period = timezone.now()
+    for project in project_results:
+        total_usage = sum([period(usage, period_start=start_period, period_end=end_period) for usage in
+                           UsageEvent.objects.filter(project=project, end__isnull=False)])
+        project.display_duration = display_duration(total_usage)
+        percentage_duration = total_usage / (end_period - start_period).total_seconds()
+        project.display_percentage_duration = f"{percentage_duration:.0%}"
+
+    return project_results
 
 
+# does conversion to show usage in days, hours and minutes
 def display_duration(seconds):
     duration = timedelta(seconds=seconds)
-    return f'{duration.days * 24 + duration.seconds // 3600} hours, {duration.seconds % 3600 // 60} minutes '
+
+    return f'{duration.days} days, {duration.seconds // 3600} hours, {duration.seconds % 3600 // 60} minutes '
     # return f'{duration.days} days, {duration.days * 24 + duration.seconds // 3600} hours, {duration.seconds % 3600 // 60} minutes '
 
 
-
-
-    # def user_usage(request):
-    # # usages = UsageEvent.objects.all()
-    # results = {}
-    # for user in User.objects.all():
-    #     results[user.name] = sum(
-    #         [usage.duration().total_seconds() for usage in UsageEvent.objects.filter(user=user, end__isnull=False)])
-    #
-    #  return render(request, "NEMO_facility_metrics/metrics_dashboard.html", {'usage': user, 'duration_result': results})results = {}
-
-
-
+# usage period requested by user
 def period(usage: UsageEvent, period_start, period_end):
     usage_start = usage.start
     usage_end = usage.end
 
     # case 3
     if period_start <= usage_start <= period_end and period_end >= usage_end >= period_start:
-        return usage.duration().total_seconds()
+        return (usage.end - usage.start).total_seconds() if usage.end and usage.start else 0
     # case 1,5
     elif (usage_start < period_start and usage_end < period_start) or (usage_start > period_end):
         return 0

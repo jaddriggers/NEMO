@@ -88,8 +88,6 @@ class StatusDashboardTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
 
         # test usage_event
-        # operator = User.objects.create(
-        #     username="mctest", first_name="Testy", last_name="McTester")
         operator = User.objects.create(
             username="McJad", first_name="Jad", last_name="H"
         )
