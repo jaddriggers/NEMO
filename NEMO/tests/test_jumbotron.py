@@ -3,7 +3,7 @@ from django.test import TestCase
 from django.urls import reverse
 
 class JumbotronTestCase(TestCase):
-#ctrl-shift-f global search
+
     def test_jumbotron(self):
         login_as_user(self.client)
         response = self.client.get(reverse("jumbotron"), follow=True)
