@@ -1,57 +1,13 @@
-{% extends 'pagination/pagination_base.html' %}
-{% block extrahead %}
-    {% load static %}
-    <link rel="stylesheet" type="text/css" href="{% static "NEMO_facility_metrics/NEMO_facility_metrics.css" %}"/>
-{% endblock %}
-{% block title %}NemoFacilityMetrics{% endblock %}
-{% block content %}
-    <h2>Facility Metrics</h2>
-    <div class="btn-group sidebar-item">
-        <button id="filter" type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown"
-                {% if no_header %}style="display:none;"{% endif %}>
-            Date Filter
-            <span class="caret"></span>
-        </button>
-        <ul class="dropdown-menu">
-            <li class="dropdown-header">Filter by...</li>
-            <li><a href="javascript:void(0)" onclick="filter('last_30_days')">Last 30 days</a></li>
-            <li><a href="javascript:void(0)" onclick="filter('last_60_days')">Last 60 days</a></li>
-            <li><a href="javascript:void(0)" onclick="filter('last_90_days')">Last 90 days</a></li>
-            <li><a href="javascript:void(0)" onclick="filter('this_year')">This Year</a></li>
-            <li><a href="javascript:void(0)" onclick="filter('custom')">Custom</a></li>
-        </ul>
-    </div>
-    {#    <div class="container">#}
-    {#    <div class="row">#}
-    {##}
-    {#        <div class="col-sm-3">#}
-    {#            <div class="form-group">#}
-    {#                <div id="filter_date">#}
-    {#                    <div class="input-group date">#}
-    {#                        <input type="text" class="form-control" placeholder="Start Date">#}
-    {#                        <div class="input-group-addon">#}
-    {#                            <span class="glyphicon glyphicon-th"></span>#}
-    {#                        </div>#}
-    {##}
-    {#                    <div class="input-group datepicker">#}
-    {#                        <input type="text" class="form-control" placeholder="End Date">#}
-    {#                        <div class="input-group-addon">#}
-    {#                            <span class="glyphicon glyphicon-th"></span>#}
-    {#                        </div>#}
-    {##}
-    {#                    </div>#}
-    {#                </div>#}
-    {#            </div>#}
-    {#        </div>#}
-    {#    </div>#}
-    {#    </div>#}
+{% extends 'NEMO_facility_metrics/metrics_base.html' %}
+{% block metrics_content %}
 
-    <table class="table table-bordered table-condensed thead-light">
+<table class="table table-bordered table-condensed thead-light">
         <thead>
         <tr>
             <th>{% include 'pagination/pagination_column.html' with order_by='tool' name='Tool' %}</th>
             <th>{% include 'pagination/pagination_column.html' with order_by='duration' name='Total Tool Duration' %}</th>
             <th>{% include 'pagination/pagination_column.html' with order_by='% use' name='% Use' %}</th>
+            <th>{% include 'pagination/pagination_column.html' with order_by='duration' name='Total Outage Duration' %}</th>
             <th>{% include 'pagination/pagination_column.html' with order_by='% use' name='% Outage' %}</th>
             <th>{% include 'pagination/pagination_column.html' with order_by='% use' name='% Full Outage' %}</th>
             <th>{% include 'pagination/pagination_column.html' with order_by='% use' name='% Partial Outage' %}</th>
@@ -64,6 +20,7 @@
                 <td>{{ tool.name }}</td>
                 <td>{{ tool.display_duration }}</td>
                 <td>{{ tool.display_percentage_duration }}</td>
+                <td>{{ tool.display_outage_duration }}</td>
                 <td>{{ tool.display_outage_percentage_duration }}</td>
                 <td>{{ tool.display_resource_percentage_duration }}</td>
                 <td>{{ tool.display_resource_percentage_partial_duration }}</td>
@@ -71,69 +28,4 @@
         {% endfor %}
         </tbody>
     </table>
-
-
-    {#    <table class="table table-bordered table-condensed thead-light">#}
-    {#        <thead>#}
-    {#        <tr>#}
-    {#            <th>{% include 'pagination/pagination_column.html' with order_by='username' name='Username' %}</th>#}
-    {#            <th>{% include 'pagination/pagination_column.html' with order_by='duration' name='Total User Duration' %}</th>#}
-    {#            <th>{% include 'pagination/pagination_column.html' with order_by='% use' name='% Use' %}</th>#}
-    {##}
-    {##}
-    {#        </tr>#}
-    {#        </thead>#}
-    {#        <tbody>#}
-    {#        {% for user in users %}#}
-    {#            <tr>#}
-    {#                <td>{{ user }}</td>#}
-    {#                <td>{{ user.display_duration }}</td>#}
-    {#                <td>{{ user.display_percentage_duration }}</td>#}
-    {##}
-    {##}
-    {#            </tr>#}
-    {#        {% endfor %}#}
-    {#        </tbody>#}
-    {#    </table>#}
-    {##}
-    {#    <table class="table table-bordered table-condensed thead-light">#}
-    {#        <thead>#}
-    {#        <tr>#}
-    {#            <th>{% include 'pagination/pagination_column.html' with order_by='project' name='Project Name' %}</th>#}
-    {#            <th>{% include 'pagination/pagination_column.html' with order_by='duration' name='Total Project Duration' %}</th>#}
-    {#            <th>{% include 'pagination/pagination_column.html' with order_by='% use' name='% Use' %}</th>#}
-    {##}
-    {##}
-    {#        </tr>#}
-    {#        </thead>#}
-    {#        <tbody>#}
-    {#        {% for project in projects %}#}
-    {#            <tr>#}
-    {#                <td>{{ project }}</td>#}
-    {#                <td>{{ project.display_duration }}</td>#}
-    {#                <td>{{ project.display_percentage_duration }}</td>#}
-    {##}
-    {##}
-    {#            </tr>#}
-    {#        {% endfor %}#}
-    {#        </tbody>#}
-    {#    </table>#}
-    <script>
-        {#$('.input-group.date').datepicker({format: "dd.mm.yyyy"});#}
-
-        function filter(show) {
-            window.location = '{% url 'facility_metrics' %}?period='+show;
-            {#$("#filter").html("Showing " + show + " <span class='caret'></span>");#}
-            {#if (show === "last 30 days")#}
-            {#    set_style('.in_use { display: table-row; } .idle { display: table-row; }');#}
-            {#else if (show === "last 60 days")#}
-            {#    set_style('.in_use { display: table-row; } .idle { display: none; }');#}
-            {#else if (show === "last 90 days")#}
-            {#    set_style('.problematic { display: table-row } .healthy { display: none; }');#}
-            {#else if (show === "This Year")#}
-            {#    set_style('.idle { display: table-row; } .in_use { display: none; }');#}
-            {#else if (show === "Custom")#}
-            {#    set_style('.idle { display: table-row; } .in_use { display: none; }');#}
-        }
-    </script>
 {% endblock %}

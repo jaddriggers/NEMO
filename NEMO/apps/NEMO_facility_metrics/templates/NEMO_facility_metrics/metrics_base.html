@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% block extrahead %}
+    {% load static %}
+    <link rel="stylesheet" type="text/css" href="{% static "NEMO_facility_metrics/NEMO_facility_metrics.css" %}"/>
+{% endblock %}
+{% block title %}NemoFacilityMetrics{% endblock %}
+
+
+{% block content %}
+
+    <h1>
+        <h1 class="pull-left" style="margin-right:20px; margin-top:0; margin-bottom:0">Facility Metrics</h1>
+        <ul class="nav nav-pills" id="tabs" {% if no_header %}style="display:none"{% endif %}>
+            {% if areas_exist %}
+                <li {% if tab == 'user' %}class="active"{% endif %}><a href="user_usage">User</a></li>{% endif %}
+            {% if tools_exist %}
+                <li {% if tab == 'tool' %}class="active"{% endif %}><a href="/facility_metrics">Tool usage</a></li>{% endif %}
+        </ul>
+    </h1>
+    <div class="btn-group sidebar-item">
+        <button id="filter" type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+            {% if period == 'last_30_days' %}
+                Last 30 days
+                {% elif period == 'last_60_days'%}
+                Last 60 days
+                {% elif period == 'last_90_days' %}
+                Last 90 days
+                {% elif period == 'this_year' %}
+                This Year
+                {% else %}
+                Date Filter
+
+
+            {% endif %}
+
+            <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu">
+            <li class="dropdown-header">Filter by...</li>
+            <li><a href="javascript:void(0)" onclick="filter('last_30_days')">Last 30 days</a></li>
+            <li><a href="javascript:void(0)" onclick="filter('last_60_days')">Last 60 days</a></li>
+            <li><a href="javascript:void(0)" onclick="filter('last_90_days')">Last 90 days</a></li>
+            <li><a href="javascript:void(0)" onclick="filter('this_year')">This Year</a></li>
+            <li><a href="javascript:void(0)" onclick="filter('custom')">Custom</a></li>
+        </ul>
+    </div>
+  {% block metrics_content %}
+
+      {% endblock %}
+    <script>
+        {#$('.input-group.date').datepicker({format: "dd.mm.yyyy"});#}
+        function on_load()
+	{
+		filter('tools in use');
+		$("#tabs a").click(switch_tab);
+		{#$("#tabs a").click(refresh_status_dashboard);#}
+		{#set_interval_when_visible(document, refresh_status_dashboard, 10000);#}
+	}
+
+	function refresh_status_dashboard()
+	{
+		var user_tab = $("#user");
+		if(user_tab.hasClass("active"))
+			user_tab.load("{% url 'facility_metrics' %}");
+
+		if($("#tool").hasClass("active"))
+			$("#tool_status_table").load("{% url 'facility_metrics' %}");
+	}
+
+
+        function filter(show) {
+            window.location = '?period=' + show;
+
+        }
+    </script>
+{% endblock %}

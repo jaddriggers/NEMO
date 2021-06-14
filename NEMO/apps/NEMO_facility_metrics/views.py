@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from typing import Tuple
 
 from django.shortcuts import render
@@ -18,26 +18,31 @@ def get_period_from_request(request) -> Tuple[datetime, datetime]:
     elif period == 'last_90_days':
         return right_now + timedelta(days=-90), right_now
 
+    elif period == 'this_year':
+        return right_now.replace(month=1, day=1, hour=12, minute=0, second=0, microsecond=0), right_now
+
     else:
         return right_now + timedelta(days=-30), right_now
 
-    # elif period == 'this_year':
-    #     return right_now + timedelta(days=-90), right_now datetime.now replace month = 1, day = 1, give the first of each year
 
-
-
-
-
+# TODO outage durations
 
 def metrics(request):
     start, end = get_period_from_request(request)
     tool_results = tool_usage(start, end)
-    period = get_period_from_request(request)
-    # user_results = user_usage(request)
-    # project_results = project_usage(request)
-    # outage_results = scheduled_outage(request)
+    period = request.GET.get("period")
 
     return render(request, "NEMO_facility_metrics/metrics_dashboard.html", {'tools': tool_results, 'period': period})
+
+
+def user_metrics(request):
+    start, end = get_period_from_request(request)
+
+    period = request.GET.get("period")
+
+    user_results = user_usage(request)
+
+    return render(request, "NEMO_facility_metrics/user_usage.html", {'users': user_results, 'period': period})
 
 
 # tool usage and outage duration
@@ -46,6 +51,7 @@ def tool_usage(start_period, end_period):
     for tool in tool_results:
         add_tool_usage(start_period, end_period, tool)
         add_tool_outage(start_period, end_period, tool)
+        add_tool_outage_duration(start_period, end_period, tool)
         add_tool_full_resource_outage(start_period, end_period, tool)
         add_tool_partial_resource_outage(start_period, end_period, tool)
 
@@ -61,6 +67,14 @@ def add_tool_usage(start_period, end_period, tool):
 
 
 def add_tool_outage(start_period, end_period, tool):
+    total_outage = sum([period(usage, period_start=start_period, period_end=end_period) for usage in
+                        ScheduledOutage.objects.filter(tool=tool, end__isnull=False)])
+    tool.display_outage_duration = display_duration(total_outage)
+    percentage_outage_duration = total_outage / (end_period - start_period).total_seconds()
+    tool.display_outage_percentage_duration = f"{percentage_outage_duration:.0%}"
+
+
+def add_tool_outage_duration(start_period, end_period, tool):
     total_outage = sum([period(usage, period_start=start_period, period_end=end_period) for usage in
                         ScheduledOutage.objects.filter(tool=tool, end__isnull=False)])
     tool.display_outage_duration = display_duration(total_outage)
@@ -114,6 +128,8 @@ def user_usage(request):
         user.display_percentage_duration = f"{percentage_duration:.0%}"
 
     return user_results
+
+
 
 
 # project usage duration

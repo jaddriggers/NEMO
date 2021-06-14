@@ -133,6 +133,7 @@ urlpatterns += [
 	url(r'^begin_staff_area_charge/$', staff_charges.begin_staff_area_charge, name='begin_staff_area_charge'),
 	url(r'^end_staff_area_charge/$', staff_charges.end_staff_area_charge, name='end_staff_area_charge'),
 
+
 	# Status dashboard:
 	url(r'^status_dashboard/$', status_dashboard.status_dashboard, name='status_dashboard'),
 	url(r'^status_dashboard/(?P<tab>tools|occupancy)/$', status_dashboard.status_dashboard, name='status_dashboard_tab'),
@@ -235,6 +236,7 @@ urlpatterns += [
 
 	# User Preferences
 	url(r'^user_preferences/$', users.user_preferences, name='user_preferences')
+
 ]
 
 if settings.ALLOW_CONDITIONAL_URLS:

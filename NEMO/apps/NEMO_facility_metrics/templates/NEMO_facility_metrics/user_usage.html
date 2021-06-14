@@ -1,0 +1,28 @@
+{% extends 'NEMO_facility_metrics/metrics_base.html' %}
+{% block metrics_content %}
+    <table class="table table-bordered table-condensed thead-light">
+        <thead>
+        <tr>
+            <th>{% include 'pagination/pagination_column.html' with order_by='user' name='User' %}</th>
+            <th>{% include 'pagination/pagination_column.html' with order_by='duration' name='Total User Duration' %}</th>
+            <th>{% include 'pagination/pagination_column.html' with order_by='% use' name='% Use' %}</th>
+            <th>{% include 'pagination/pagination_column.html' with order_by='% use' name='% Outage' %}</th>
+            <th>{% include 'pagination/pagination_column.html' with order_by='% use' name='% Full Outage' %}</th>
+            <th>{% include 'pagination/pagination_column.html' with order_by='% use' name='% Partial Outage' %}</th>
+        </tr>
+        </thead>
+        <tbody>
+
+        {% for user in users %}
+            <tr>
+                <td>{{ user.username }}</td>
+                <td>{{ user.display_duration }}</td>
+                <td>{{ user.display_percentage_duration }}</td>
+                <td>{{ user.display_outage_percentage_duration }}</td>
+                <td>{{ user.display_resource_percentage_duration }}</td>
+                <td>{{ user.display_resource_percentage_partial_duration }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
